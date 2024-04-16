@@ -1,4 +1,5 @@
 <template>
+  <v-card class="mx-auto" max-width="600" min-width="300">
   <v-list>
     <v-list-item v-for="balance in balances" :key="balance.id" :title="balance.title"
       :subtitle="balance.date + ' ' + balance.expence">
@@ -13,6 +14,7 @@
       </template>
     </v-list-item>
   </v-list>
+  </v-card>
   <v-container>
     <v-row align="center" justify="center">
       <v-col cols="auto">
@@ -23,7 +25,7 @@
   <!-- <v-overlay v-model="isShowBalanceInput" contained class="align-center justify-center"
    persistent="true" scrollable > -->
   <v-dialog width="auto" scrollable v-model="isShowBalanceInput" persistent>
-    <BalanceInput></BalanceInput>
+    <BalanceInput @submit-form="submitForm"></BalanceInput>
     <v-btn @click="isShowBalanceInput = false">
       閉じる
     </v-btn>
@@ -38,47 +40,42 @@
   <v-btn @click="getBalanceById">
     OK
   </v-btn>
-  <div>{{ balance.id }}</div>
-  <div>{{ balance.title }}</div>
-  <div>{{ balance.account }}</div>
-  <div>{{ balance.category }}</div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue"
+import { ref, computed, useAttrs } from "vue"
 import { useCounterStore } from '@/stores/counter';
-import { useBalanceStore } from "@/stores/balance";
+import { useBalancesStore } from "@/stores/balances";
+import { useAccountsStore } from "@/stores/accounts";
 import { storeToRefs } from "pinia";
 
-const balances = ref([
-  {
-    id: 1,
-    title: '食料',
-    date: '2024-02-14',
-    expence: -2345,
-    wallet: '謙吾',
-    account: 'Recruit Card Plus',
-    category: '食費',
-  },
-  {
-    id: 2,
-    title: '昼食',
-    date: '2024-02-17',
-    expence: -1900,
-    wallet: '謙吾',
-    account: 'Suice',
-    category: '外食費',
-  },
-]);
+const attrs = useAttrs();
+console.log(attrs.accountId);
+// if (attrs.account) {
+//   account.value = attrs.account;
+// }
+const { getAccountById, getAccounts } = useAccountsStore();
+// const balances = ref([]);
+const balancesStore = useBalancesStore();
+const { balances, currentBalance } = storeToRefs(balancesStore);
+const account = getAccountById(attrs.accountId);
+account.then( result => {
+  balances.value = result.balances;
+  currentBalance.value.account_id = attrs.accountId;
+  currentBalance.value.account.id = result.id;
+  currentBalance.value.account.account_name = result.account_name;
+  console.log('account', result);
+  console.log(currentBalance.value.account.id);
+  console.log(currentBalance.value.account.account_name);
+}
+);
 const isShowBalanceInput = ref(false);
 
 const showBalanceInput = () => {
   isShowBalanceInput.value = true;
 };
 
-const balanceStore = useBalanceStore();
-const { balance } = storeToRefs(balanceStore);
-const { getBalanceById } = balanceStore;
+const { getBalanceById, createBalance } = balancesStore;
 
 // const userStore = useUserStore();
 // const getUsers = computed(() => {
@@ -100,4 +97,13 @@ const { count, name} = storeToRefs(store);
 const { increment } = store;
 const doubleValue = computed(() => store.doubleCount)
 
+function submitForm(balance) {
+  isShowBalanceInput.value = false;
+  console.log('submitForm', balance);
+  if (balance.id) {
+    // updateBalance(balance);
+  } else {
+    createBalance(balance);
+  }
+}
 </script>

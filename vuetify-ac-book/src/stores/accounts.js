@@ -1,25 +1,23 @@
 import { ref, computed, reactive } from 'vue'
-import { defineStore } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import axios from 'axios'
+import { useApi } from './api';
+import { useAuthStore } from './auth';
 
 export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref([]);
-  function getAccounts() {
-    axios.get('http://10.0.1.56:8081/accounts')
-      .then(function (response) {
-        console.log(response);
-        const res = response.data;
-        console.log(res);
-        accounts.value = res;
-        console.log(accounts.value);
-      })
-      .catch(function (error) {
-        console.log(error);
-      })
-      .finally(function () {
-        // always executed
-      });
+  const { getAccountsAll, getAccount, postAccount, patchAccount } = useApi();
+  const { token } = storeToRefs(useAuthStore());
+  async function getAccounts() {
+    accounts.value = await getAccountsAll(token.value);
   }
+
+  async function getAccountById(accountId) {
+    const response = await getAccount(accountId, token.value);
+    console.log(response);
+    return response;
+  }
+
   const accountTypeSet = computed(() => {
     const res = new Set();
     accounts.value.forEach(account => {
@@ -28,8 +26,6 @@ export const useAccountsStore = defineStore('accounts', () => {
     return res;
   });
   const accountsAry = computed(() => {
-    console.log('accountsAry');
-    console.log(accounts.value);
     const res = {};
     accounts.value.forEach(account => {
       if(!res[account.type]) {
@@ -37,12 +33,10 @@ export const useAccountsStore = defineStore('accounts', () => {
       }
       res[account.type].push(account);
     });
-    console.log(res);
     return res;
   });
 
-  function createAccount(account) {
-    console.log('ACCOUNT', account);
+  async function createAccount(account) {
     account.bonus_month = account.bonus_month == null ? 0 : account.bonus_month;
     account.closing_date = account.closing_date == null ? 0 : account.closing_date;
     account.withdrawal_date = account.withdrawal_date == null ? 0 : account.withdrawal_date;
@@ -58,32 +52,27 @@ export const useAccountsStore = defineStore('accounts', () => {
       "closing_date": account.closing_date,
       "bonus_month": account.bonus_month,
     };
-    console.log(accountModel);
-    axios.post('http://10.0.1.56:8081/accounts',
-      account, {
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(response => {
-        console.log('レスポンス', response);
-        if (response.data) {
-          accounts.value.push(response.data);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      })
-      .finally(() => {
-        // always executed
-      });
+    const res = await postAccount(account, token.value);
+    if (res) {
+      accounts.value.push(res);
+    }
+  }
+
+  async function updateAccount(account) {
+    account.bonus_month = account.bonus_month == null ? 0 : account.bonus_month;
+    account.closing_date = account.closing_date == null ? 0 : account.closing_date;
+    account.withdrawal_date = account.withdrawal_date == null ? 0 : account.withdrawal_date;
+    const accountId = account.id;
+    const res = await patchAccount(accountId, account, token.value);
   }
 
   return {
     accounts,
     getAccounts,
+    getAccountById,
     accountTypeSet,
     accountsAry,
     createAccount,
+    updateAccount,
   };
 });

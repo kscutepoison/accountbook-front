@@ -35,6 +35,7 @@ const account = ref({
   closing_date: null,
   bonus_month: null,
   order: 100,
+  id: null,
 });
 const validation = ref({
     rules: [
@@ -58,10 +59,10 @@ function submitForm() {
     console.log('emit', account.value);
     emit('submitForm', account.value);
 }
-onMounted(() => {
+// onMounted(() => {
   console.log(attrs.account);
   if (attrs.account) {
     account.value = attrs.account;
   }
-});
+// });
 </script>

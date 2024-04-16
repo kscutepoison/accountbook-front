@@ -26,7 +26,8 @@
           <v-list-item v-bind="props" :title="type"></v-list-item>
         </template>
         <v-list-item v-for="account in accounts" :key="account.id" :title="account.account_name"
-          :value="account.account_name">
+          :value="account.account_name"
+          @click="clickAccount(account.id)">
           <template v-slot:append>
             <v-btn color="blue-grey-lighten-4" icon="mdi-information" variant="text" @click="editAccount(account)"></v-btn>
           </template>
@@ -61,21 +62,23 @@
 import { ref, computed, onMounted } from "vue"
 import { useAccountsStore } from '@/stores/accounts';
 import { storeToRefs } from "pinia";
+import router from "@/router";
 
 const isShowAccountInput = ref(false);
 const open = ref([]);
 
 const accountsStore = useAccountsStore();
 const { accountTypeSet, accountsAry } = storeToRefs(accountsStore);
-const { getAccounts, createAccount } = accountsStore;
-onMounted(() => {
-  getAccounts();
-});
+const { getAccounts, createAccount, updateAccount } = accountsStore;
+getAccounts();
 function submitForm(account) {
   isShowAccountInput.value = false;
   console.log('submitForm', account);
-  createAccount(account);
-  // getAccounts();
+  if (account.id) {
+    updateAccount(account);
+  } else {
+    createAccount(account);
+  }
 }
 const account = ref();
 function addAccount() {
@@ -85,5 +88,8 @@ function addAccount() {
 function editAccount(target) {
   account.value = target;
   isShowAccountInput.value = true;
+}
+function clickAccount(id) {
+  router.push('/balances/' + id);
 }
 </script>
