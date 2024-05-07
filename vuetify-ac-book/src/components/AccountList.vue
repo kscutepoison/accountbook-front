@@ -90,6 +90,6 @@ function editAccount(target) {
   isShowAccountInput.value = true;
 }
 function clickAccount(id) {
-  router.push('/balances/' + id);
+  router.push(`/balances?accountId=${id}`);
 }
 </script>

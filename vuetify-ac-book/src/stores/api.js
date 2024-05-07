@@ -2,7 +2,8 @@ import axios from 'axios'
 import router from "@/router";
 
 export const useApi = () => {
-  const BASE_URL = "http://localhost:8000";
+  // const BASE_URL = "http://localhost:8000";
+  const BASE_URL = "http://10.0.1.52:8000";
 
   async function login(username, password) {
     try {
@@ -58,10 +59,48 @@ export const useApi = () => {
     }
   }
 
+  async function getPayee(token) {
+    try {
+      const res = await axios.get(`${BASE_URL}/balances/payee/`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data;
+    } catch (error) {
+      if (error.response.status == 401){
+        router.push('/auth');
+        return null;
+      }
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+    }
+  }
+
   async function getAccountsAll(token) {
     try {
       console.log('TOKEN', token);
       const res = await axios.get(`${BASE_URL}/accounts`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+    }
+  }
+
+  async function getBalancesAll(token) {
+    try {
+      const res = await axios.get(`${BASE_URL}/balances`, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -226,6 +265,7 @@ export const useApi = () => {
 
   async function patchBalance(balanceId, balance, token) {
     try {
+      console.log('patchBalance', balance);
       const res = await axios.patch(`${BASE_URL}/balances/${balanceId}`,
         balance, {
         headers: {
@@ -243,6 +283,44 @@ export const useApi = () => {
     }
   }
 
+  async function deleteBalance(balanceId, token) {
+    try {
+      const res = await axios.delete(`${BASE_URL}/balances/${balanceId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+      return res;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log(error);
+    }
+  }
+
+  async function deleteCategory(categoryId, token) {
+    try {
+      const res = await axios.delete(`${BASE_URL}/categories/${categoryId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          }
+        });
+      return res;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log(error);
+    }
+  }
+
   return {
     login,
     usersMe,
@@ -250,12 +328,16 @@ export const useApi = () => {
     getAccount,
     postAccount,
     patchAccount,
+    getBalancesAll,
     getBalance,
     postBalance,
     patchBalance,
+    deleteBalance,
     getCategoriesAll,
     getCategory,
     postCategory,
     patchCategory,
+    deleteCategory,
+    getPayee,
   }
 }

@@ -5,7 +5,13 @@ import { useAuthStore } from './auth';
 
 export const useCategoriesStore = defineStore('categories', () => {
   const categories = ref([]);
-  const { getCategoriesAll, getCategory, postCategory, patchCategory } = useApi();
+  const { 
+    getCategoriesAll, 
+    getCategory, 
+    postCategory, 
+    patchCategory,
+    deleteCategory, 
+  } = useApi();
   const { token } = storeToRefs(useAuthStore());
   async function getCategories() {
     categories.value = await getCategoriesAll(token.value);
@@ -47,6 +53,11 @@ export const useCategoriesStore = defineStore('categories', () => {
     const res = await patchCategory(categoryId, category, token.value);
   }
 
+  async function removeCategory(category) {
+    const categoryId = category.id;
+    const res = await deleteCategory(categoryId, token.value);
+  }
+
   return {
     categories,
     getCategories,
@@ -55,5 +66,6 @@ export const useCategoriesStore = defineStore('categories', () => {
     categoriesAry,
     createCategory,
     updateCategory,
+    removeCategory,
   };
 });
