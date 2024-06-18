@@ -1,75 +1,40 @@
 <template>
-  <v-card
-    title="Nutrition"
-    flat
-  >
-    <template v-slot:text>
-      <v-text-field
-        v-model="search"
-        label="Search"
-        prepend-inner-icon="mdi-magnify"
-        variant="outlined"
-        hide-details
-        single-line
-      ></v-text-field>
-    </template>
- <v-container>
+  <v-card class="mx-auto" max-width="600" min-width="300">
+    <v-list>
+      <v-list-item v-for="balance in balances" :key="balance.id" :title="balance.title"
+        :subtitle="getDateW(balance.date) + ' ' + balance.expence" @click="showBalanceInput(balance)">
+        <template v-slot:prepend>
+          <v-avatar color="grey-lighten-1">
+            <v-icon color="white">mdi-folder</v-icon>
+          </v-avatar>
+        </template>
+
+        <template v-slot:append>
+          <v-btn color="grey-lighten-1" icon="mdi-information" variant="text"></v-btn>
+        </template>
+      </v-list-item>
+    </v-list>
+  </v-card>
+  <v-container>
     <v-row align="center" justify="center">
       <v-col cols="auto">
         <v-btn density="compact" icon="mdi-plus" size="large" @click="showBalanceInput()"></v-btn>
       </v-col>
     </v-row>
   </v-container>
- <!-- <v-data-table 
-    :items="tableItems"
-    :headers="headers"
-    density="compact"
-    hide-default-header>
-  </v-data-table> -->
-  <v-data-table 
-    :group-by="groupBy"
-    :items="tableItems"
-    :headers="headers"
-    :search="search"
-    hide-default-footer
-    hide-default-header>
-    <!-- <template v-slot:item.group="{ item }">
-      <tr>
-        <td></td>
-      </tr>
-    </template> -->
-    <template v-slot:item="{ item }">
-      <tr>
-        <td>
-          <v-card>
-            <v-icon color="white">mdi-folder</v-icon><v-spacer></v-spacer>{{ item.title }}
-              {{ item.date }} {{ item.expense }}<v-spacer></v-spacer>
-            <v-icon
-              class="me-2"
-              size="small"
-              @click="showBalanceInput(item.balance)"
-            >
-              mdi-pencil
-            </v-icon>
-          </v-card>
-        </td>
-      </tr>
-    </template>
-  </v-data-table>
-  
+  <!-- <v-overlay v-model="isShowBalanceInput" contained class="align-center justify-center"
+   persistent="true" scrollable > -->
   <v-dialog width="auto" scrollable v-model="isShowBalanceInput" persistent>
     <BalanceInput @submit-form="submitForm" @delete-form="deleteForm"></BalanceInput>
     <v-btn @click="isShowBalanceInput = false">
       閉じる
     </v-btn>
+    <!-- </v-overlay> -->
   </v-dialog>
-</v-card>
 </template>
 
-
-
 <script setup>
-  import { ref, watch, computed, useAttrs } from "vue"
+import { ref, watch, computed, useAttrs } from "vue"
 import { useBalancesStore } from "@/stores/balances";
 import { useCategoriesStore } from "@/stores/categories";
 import { useAccountsStore } from "@/stores/accounts";
@@ -82,58 +47,41 @@ const route = useRoute();
 let categoryId = route.query.categoryId;
 let accountId = route.query.accountId;
 
-const { getCategoryById } = useCategoriesStore();
+const { getAccountById } = useAccountsStore();
+const { getCategoryById, getCategories } = useCategoriesStore();
+// const balances = ref([]);
 const balancesStore = useBalancesStore();
 const { getBalances } = balancesStore;
 const { balances, currentBalance } = storeToRefs(balancesStore);
+const { categories } = storeToRefs(useCategoriesStore());
+// if (categories.value.length == 0) {
+//   getCategories();
+// }
 
 const updBalances = ()=> {
-  const param = {};
   if (categoryId) {
-    param = {
-      category_id: categoryId,
-    }
+    categoryOrAccount = getCategoryById(categoryId);
+    categoryOrAccount.then(result => {
+      balances.value = result.balances;
+    });
   } else if (accountId) {
-    param = {
+    // categoryOrAccount = getAccountById(accountId);
+    // categoryOrAccount.then(result => {
+    //   balances.value = result.balances;
+    // }
+    // );
+    getBalances({
       account_id: accountId,
       transfer_id: accountId,
-    }
-  } else {
-    param = null;
-  }
-  getBalances(param).then(result => {
-    balances.value = result;
-  });
-};
-
-const headers = [
-  // {title: 'ID', key: 'id'},
-  {title: 'Title', key: 'title'},
-  {title: 'Date', key: 'date'},
-  {title: 'Expense', key: 'expense'},
-];
-
-const groupBy = [{
-  key: 'yearMonth', 
-  order: 'desc',
-}];
-
-const search = ref('');
-
-const tableItems = computed(() => {
-  const res = [];
-  balances.value.forEach(b => {
-    res.push({
-      // id: b.id,
-      title: b.title,
-      date: getDateW(b.date),
-      expense: b.expence,
-      yearMonth: getYearMonth(b.date),
-      balance: b,
+    }).then(result => {
+      balances.value = result;
     });
-  });
-  return res;
-});
+  } else {
+    getBalances(null).then(result => {
+      balances.value = result;
+    });
+  }
+};
 
 let categoryOrAccount;
 updBalances();
@@ -171,6 +119,7 @@ const showBalanceInput = (balance) => {
   isShowBalanceInput.value = true;
 };
 
+
 function submitForm(balance) {
   isShowBalanceInput.value = false;
   console.log('submitForm', balance);
@@ -197,10 +146,4 @@ const getDateW = (date) => {
   const dt = dayjs(date);
   return dt.format('YYYY-MM-DD(ddd) HH:mm');
 };
-
-const getYearMonth = (date) => {
-  dayjs.locale(ja);
-  const dt = dayjs(date);
-  return dt.format('YYYY-MM');
-}
 </script>

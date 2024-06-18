@@ -3,6 +3,8 @@
     <v-form @submit.prevent>
       <v-text-field v-model="category.category_name" label="カテゴリ名"></v-text-field>
       <v-text-field v-model="category.type" label="収支区分" type="text"></v-text-field>
+      <v-text-field v-model="category.icon" label="アイコン" type="text"></v-text-field>
+      <v-icon :icon="category.icon"></v-icon>
       <v-btn type="submit" block class="mt-2" @click="submitForm">登録</v-btn>
     </v-form>
   </v-sheet>
@@ -17,6 +19,7 @@ import { storeToRefs } from "pinia";
 const category = ref({
   category_name: '',
   type: '',
+  icon: '',
   order: 100,
   id: null,
 });

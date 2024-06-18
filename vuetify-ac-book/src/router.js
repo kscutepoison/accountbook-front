@@ -28,11 +28,11 @@ const router = createRouter({
 });
 
 router.beforeEach(function (to, _, next) {
-  const { isAuthenticated } = useAuthStore();
-  console.log(isAuthenticated);
+  const { isAuthenticated, refresh_token } = useAuthStore();
   if (!isAuthenticated && !to.meta.requiresUnauth) {
     next('/auth');
   } else {
+    refresh_token();
     next();
   }
 });

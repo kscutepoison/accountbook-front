@@ -5,7 +5,7 @@ import { useApi } from './api';
 export const useAuthStore = defineStore('auth', () => {
   const userId = ref('');
   const token = ref('');
-  const { login } = useApi();
+  const { login, refreshToken } = useApi();
 
   const isAuthenticated = computed(() => {
     if (!token.value) {
@@ -14,6 +14,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
     return !!token.value;
   });
+
+  async function refresh_token() {
+    const res = await refreshToken(token.value);
+    if (res) {
+      token.value = res;
+      localStorage.setItem('token', token.value);
+      return true;
+    }
+    return false;
+  }
 
   async function doLogin(username, password) {
     const res = await login(username, password);
@@ -41,5 +51,6 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     doLogin,
     doLogout,
+    refresh_token,
   };
 });

@@ -16,6 +16,7 @@ export const useBalancesStore = defineStore('balances', () => {
     checked: false,
     notes: '',
     modified: null,
+    withdrawal_date: null,
     category_id: null,
     account_id: null,
     account: {
@@ -26,11 +27,15 @@ export const useBalancesStore = defineStore('balances', () => {
       id: null,
       category_name: null,
     },
+    transfer_id: null,
   });
   const payee = ref([]);
+  const tab = ref();
   const { token } = storeToRefs(useAuthStore());
   const { 
-    getBalancesAll,
+    getBalancesApi,
+    getBalanceSumApi,
+    getBalancesGroupByAccountApi,
     getBalance, 
     postBalance, 
     patchBalance, 
@@ -44,8 +49,13 @@ export const useBalancesStore = defineStore('balances', () => {
     return response;
   }
 
-  async function getBalances() {
-    const response = await getBalancesAll(token.value);
+  async function getBalances(params) {
+    balances.value = await getBalancesApi(params, token.value);
+    return balances.value;
+  }
+
+  async function getBalancesSum(params) {
+    const response = await getBalanceSumApi(params, token.value);
     return response;
   }
 
@@ -105,6 +115,7 @@ export const useBalancesStore = defineStore('balances', () => {
       checked: false,
       notes: '',
       modified: null,
+      withdrawal_date: null,
       category_id: null,
       account_id: null,
       account: {
@@ -115,6 +126,7 @@ export const useBalancesStore = defineStore('balances', () => {
         id: null,
         category_name: null,
       },
+      transfer_id: null,
     };
   }
 
@@ -123,11 +135,13 @@ export const useBalancesStore = defineStore('balances', () => {
     currentBalance,
     payee,
     getBalances,
+    getBalancesSum,
     getBalanceById,
     createBalance,
     updateBalance,
     removeBalance,
     resetCurrentBalance,
     setPayee,
+    tab,
   }
 });

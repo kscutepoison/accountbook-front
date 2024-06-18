@@ -6,15 +6,28 @@ import { useAuthStore } from './auth';
 
 export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref([]);
-  const { getAccountsAll, getAccount, postAccount, patchAccount } = useApi();
+  const accountsWithBalanceSum = ref([]);
+  const { getAccountsAll, 
+    getAccountApi, 
+    postAccount, 
+    patchAccount,
+    getAccountsWithBalanceSumApi
+  } = useApi();
   const { token } = storeToRefs(useAuthStore());
   async function getAccounts() {
     accounts.value = await getAccountsAll(token.value);
   }
 
   async function getAccountById(accountId) {
-    const response = await getAccount(accountId, token.value);
+    const response = await getAccountApi(accountId, token.value);
     console.log(response);
+    return response;
+  }
+
+  async function getAccountsWithBalanceSum() {
+    const response = await getAccountsWithBalanceSumApi(token.value);
+    accountsWithBalanceSum.value = response;
+    // console.log(response);
     return response;
   }
 
@@ -38,18 +51,19 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   async function createAccount(account) {
     account.bonus_month = account.bonus_month == null ? 0 : account.bonus_month;
-    account.closing_date = account.closing_date == null ? 0 : account.closing_date;
-    account.withdrawal_date = account.withdrawal_date == null ? 0 : account.withdrawal_date;
+    account.closing_day = account.closing_day == null ? 0 : account.closing_day;
+    account.withdrawal_day = account.withdrawal_day == null ? 0 : account.withdrawal_day;
 
     const accountModel = {
       "account_name": account.account_name,
       "type": account.type,
       "order": account.order,
+      "owner": account.owner,
       "is_rollup": account.is_rollup,
       "is_archived": account.is_archived,
       "is_primary": account.is_primary,
-      "withdrawal_date": account.withdrawal_date,
-      "closing_date": account.closing_date,
+      "withdrawal_day": account.withdrawal_day,
+      "closing_day": account.closing_day,
       "bonus_month": account.bonus_month,
     };
     const res = await postAccount(account, token.value);
@@ -60,19 +74,32 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   async function updateAccount(account) {
     account.bonus_month = account.bonus_month == null ? 0 : account.bonus_month;
-    account.closing_date = account.closing_date == null ? 0 : account.closing_date;
-    account.withdrawal_date = account.withdrawal_date == null ? 0 : account.withdrawal_date;
+    account.closing_day = account.closing_day == null ? 0 : account.closing_day;
+    account.withdrawal_day = account.withdrawal_day == null ? 0 : account.withdrawal_day;
     const accountId = account.id;
     const res = await patchAccount(accountId, account, token.value);
   }
 
+  const getAccount = (accountId) => {
+    const ac = accounts.value.filter(account => {
+      return account.id == accountId;
+    });
+    if (ac.length === 1) {
+      return ac[0];
+    }
+    return null;
+  }
+
   return {
     accounts,
+    accountsWithBalanceSum,
     getAccounts,
+    getAccount,
     getAccountById,
     accountTypeSet,
     accountsAry,
     createAccount,
     updateAccount,
+    getAccountsWithBalanceSum,
   };
 });

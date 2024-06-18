@@ -24,6 +24,22 @@ export const useApi = () => {
     }
   }
 
+  async function refreshToken(token) {
+    try {
+      const res = await axios.get(`${BASE_URL}/refresh_token`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data.access_token; 
+    } catch (error) {
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+      return null;
+    }
+  }
+
   async function usersMe(token) {
     try {
       const res = await axios.get(`${BASE_URL}/users/me`, {
@@ -98,9 +114,87 @@ export const useApi = () => {
     }
   }
 
-  async function getBalancesAll(token) {
+  async function getBalancesApi(params, token) {
+    let url = `${BASE_URL}/balances`;
+    if (params) {
+      Object.keys(params).forEach(function (key) {
+        url += '&' + key + '=' + params[key];
+      });
+      url = url.replace('balances&', 'balances?');
+    }
     try {
-      const res = await axios.get(`${BASE_URL}/balances`, {
+      const res = await axios.get(url, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+    }
+  }
+
+  async function getAccountsWithBalanceSumApi(token) {
+    try {
+      const res = await axios.get(`${BASE_URL}/accounts/sum/`, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+    }
+  }
+
+  async function getCategoriesWithBalanceSumApi(params, token) {
+    let url = `${BASE_URL}/categories/sum/`;
+    if (params) {
+      Object.keys(params).forEach(function (key) {
+        url += '&' + key + '=' + params[key];
+      });
+      url = url.replace('sum/&', 'sum/?');
+    }
+    try {
+      const res = await axios.get(url, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+    }
+  }
+
+  async function getBalanceSumApi(params, token) {
+    let url = `${BASE_URL}/balances/sum`;
+    if (params) {
+      Object.keys(params).forEach(function (key) {
+        url += '&' + key + '=' + params[key];
+      });
+      url = url.replace('sum&', 'sum?');
+    }
+    try {
+      const res = await axios.get(url, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -135,7 +229,7 @@ export const useApi = () => {
     }
   }
 
-  async function getCategory(categoryId, token) {
+  async function getCategoryApi(categoryId, token) {
     try {
       const res = await axios.get(`${BASE_URL}/categories/${categoryId}`, {
         headers: {
@@ -153,7 +247,7 @@ export const useApi = () => {
     }
   }
 
-  async function getAccount(accountId, token) {
+  async function getAccountApi(accountId, token) {
     try {
       const res = await axios.get(`${BASE_URL}/accounts/${accountId}`, {
         headers: {
@@ -323,18 +417,22 @@ export const useApi = () => {
 
   return {
     login,
+    refreshToken,
     usersMe,
     getAccountsAll,
-    getAccount,
+    getAccountApi,
     postAccount,
     patchAccount,
-    getBalancesAll,
+    getAccountsWithBalanceSumApi,
+    getCategoriesWithBalanceSumApi,
+    getBalancesApi,
+    getBalanceSumApi,
     getBalance,
     postBalance,
     patchBalance,
     deleteBalance,
     getCategoriesAll,
-    getCategory,
+    getCategoryApi,
     postCategory,
     patchCategory,
     deleteCategory,

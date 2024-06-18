@@ -5,9 +5,11 @@ import { useAuthStore } from './auth';
 
 export const useCategoriesStore = defineStore('categories', () => {
   const categories = ref([]);
+  const categoriesWithBalanceSum = ref([]);
   const { 
     getCategoriesAll, 
-    getCategory, 
+    getCategoryApi, 
+    getCategoriesWithBalanceSumApi,
     postCategory, 
     patchCategory,
     deleteCategory, 
@@ -18,8 +20,16 @@ export const useCategoriesStore = defineStore('categories', () => {
   }
 
   async function getCategoryById(categoryId) {
-    const response = await getCategory(categoryId, token.value);
+    const response = await getCategoryApi(categoryId, token.value);
     console.log(response);
+    return response;
+  }
+
+  async function getCategoriesWithBalanceSum(params) {
+    console.log(params);
+    const response = await getCategoriesWithBalanceSumApi(params, token.value);
+    categoriesWithBalanceSum.value = response;
+    // console.log(response);
     return response;
   }
 
@@ -58,14 +68,27 @@ export const useCategoriesStore = defineStore('categories', () => {
     const res = await deleteCategory(categoryId, token.value);
   }
 
+  const getCategory = (categoryId) => {
+    const ct = categories.value.filter(category => {
+      return category.id == categoryId;
+    });
+    if (ct.length === 1) {
+      return ct[0];
+    }
+    return null;
+  }
+
   return {
     categories,
+    categoriesWithBalanceSum,
     getCategories,
+    getCategory,
     getCategoryById,
     categoryTypeSet,
     categoriesAry,
     createCategory,
     updateCategory,
     removeCategory,
+    getCategoriesWithBalanceSum,
   };
 });
