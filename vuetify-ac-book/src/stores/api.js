@@ -3,7 +3,8 @@ import router from "@/router";
 
 export const useApi = () => {
   // const BASE_URL = "http://localhost:8000";
-  const BASE_URL = "http://10.0.1.52:8000";
+  // const BASE_URL = "http://10.0.1.52:8000";
+  const BASE_URL = "https://fastapi.cute-poison.f5.si";
 
   async function login(username, password) {
     try {
