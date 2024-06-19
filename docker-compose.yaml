@@ -1,0 +1,16 @@
+services:
+  accountbook-front:
+    # image: nginx:stable-alpine
+    image: nginx
+    container_name: accountbook-front
+    ports:
+      - 8082:80
+    volumes:
+      # - /srv/dev-disk-by-uuid-24d51ea4-3f56-4b7d-b433-c679788c58f6/appdata/accountbook-front/dist:/usr/share/nginx/html
+      - /srv/dev-disk-by-uuid-24d51ea4-3f56-4b7d-b433-c679788c58f6/appdata/accountbook-front/dist:/var/www
+      - /srv/dev-disk-by-uuid-24d51ea4-3f56-4b7d-b433-c679788c58f6/appdata/accountbook-front/nginx:/etc/nginx/conf.d/
+    environment:
+      - TZ=Asia/Tokyo
+      - PUID=1001
+      - PGID=100
+    # command: "nginx -g 'daemon off;'"
