@@ -7,7 +7,7 @@
           clearable></v-text-field>
 
         <v-text-field v-model="password" :readonly="loading" :rules="[required]" label="Password"
-          placeholder="Enter your password" clearable></v-text-field>
+          placeholder="Enter your password" clearable type="password"></v-text-field>
           <br>
         <v-btn
           :disabled="!form"
