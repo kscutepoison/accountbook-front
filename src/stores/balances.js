@@ -32,15 +32,16 @@ export const useBalancesStore = defineStore('balances', () => {
   const payee = ref([]);
   const tab = ref();
   const { token } = storeToRefs(useAuthStore());
-  const { 
+  const {
     getBalancesApi,
     getBalanceSumApi,
+    getBalancesWithAccountIdApi,
     getBalancesGroupByAccountApi,
-    getBalance, 
-    postBalance, 
-    patchBalance, 
-    deleteBalance, 
-    getPayee 
+    getBalance,
+    postBalance,
+    patchBalance,
+    deleteBalance,
+    getPayee
   } = useApi();
 
   async function getBalanceById(balanceId) {
@@ -51,6 +52,11 @@ export const useBalancesStore = defineStore('balances', () => {
 
   async function getBalances(params) {
     balances.value = await getBalancesApi(params, token.value);
+    return balances.value;
+  }
+
+  async function getBalancesWithAccountId(accountId, params) {
+    balances.value = await getBalancesWithAccountIdApi(accountId, params, token.value);
     return balances.value;
   }
 
@@ -135,6 +141,7 @@ export const useBalancesStore = defineStore('balances', () => {
     currentBalance,
     payee,
     getBalances,
+    getBalancesWithAccountId,
     getBalancesSum,
     getBalanceById,
     createBalance,

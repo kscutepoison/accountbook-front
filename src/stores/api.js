@@ -33,7 +33,7 @@ export const useApi = () => {
           'Authorization': `Bearer ${token}`,
         }
       });
-      return res.data.access_token; 
+      return res.data.access_token;
     } catch (error) {
       console.log('エラー', error.response.status);
       console.log('エラー', error);
@@ -115,6 +115,7 @@ export const useApi = () => {
     }
   }
 
+
   async function getBalancesApi(params, token) {
     let url = `${BASE_URL}/balances`;
     if (params) {
@@ -122,6 +123,31 @@ export const useApi = () => {
         url += '&' + key + '=' + params[key];
       });
       url = url.replace('balances&', 'balances?');
+    }
+    try {
+      const res = await axios.get(url, {
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      return res.data;
+    } catch (error) {
+      if (error.response.status == 401) {
+        router.push('/auth');
+        return null;
+      }
+      console.log('エラー', error.response.status);
+      console.log('エラー', error);
+    }
+  }
+
+  async function getBalancesWithAccountIdApi(accountId, params, token) {
+    let url = `${BASE_URL}/balances/${accountId}?`;
+    if (params) {
+      Object.keys(params).forEach(function (key) {
+        url += '&' + key + '=' + params[key];
+      });
     }
     try {
       const res = await axios.get(url, {
@@ -186,6 +212,7 @@ export const useApi = () => {
     }
   }
 
+
   async function getBalanceSumApi(params, token) {
     let url = `${BASE_URL}/balances/sum`;
     if (params) {
@@ -211,6 +238,7 @@ export const useApi = () => {
       console.log('エラー', error);
     }
   }
+
 
   async function getBalance(balanceId, token) {
     try {
@@ -427,6 +455,7 @@ export const useApi = () => {
     getAccountsWithBalanceSumApi,
     getCategoriesWithBalanceSumApi,
     getBalancesApi,
+    getBalancesWithAccountIdApi,
     getBalanceSumApi,
     getBalance,
     postBalance,

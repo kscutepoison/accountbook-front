@@ -209,6 +209,11 @@ const categoriesStore = useCategoriesStore();
 const { categories } = storeToRefs(categoriesStore);
 const { getCategories } = categoriesStore;
 
+const dt = ref({
+  date: dayjs().format("YYYY-MM-DD"),
+  time: '00:00',
+});
+
 const balance = ref({});
 watch(
   () => currentBalance.value,
@@ -262,17 +267,14 @@ if (payee.value.length == 0) {
   setPayee();
 }
 
-const dt = ref({
-  date: dayjs().format("YYYY-MM-DD"),
-  time: "00:00",
-});
-
 watch(
   () => balance.value,
   (blc, _) => {
-    const dy = dayjs(blc.date);
-    dt.value.date = dy.format("YYYY-MM-DD");
-    dt.value.time = dy.format("HH:mm");
+    if (blc.date) {
+      const dy = dayjs(blc.date);
+      dt.value.date = dy.format("YYYY-MM-DD");
+      dt.value.time = dy.format("HH:mm");
+    }
     blc.exp = Math.abs(+blc.expence);
     if (blc.transfer_id) {
       tab.value = "transfer";

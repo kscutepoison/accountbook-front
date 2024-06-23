@@ -122,9 +122,18 @@
             balance.title +
             (balance.baught_at ? '(' + balance.baught_at + ')' : '')
           "
-          :subtitle="getDateW(balance.date)"
           @click="showBalanceInput(balance)"
         >
+          <template v-slot:subtitle>
+            {{ getDateW(balance.date) }}
+            <v-chip
+              v-if="balance.roll_up"
+              variant="text"
+              :color="balance.roll_up >= 0 ? 'green' : 'red'"
+            >
+              {{ balance.roll_up.toLocaleString() }}
+            </v-chip>
+          </template>
           <template v-slot:prepend>
             <!-- <v-avatar color="grey-lighten-1"> -->
             <v-icon color="white">{{
@@ -199,7 +208,7 @@ const { accounts } = storeToRefs(accountsStore);
 const { getCategoryById, getCategories, getCategory } = useCategoriesStore();
 // const balances = ref([]);
 const balancesStore = useBalancesStore();
-const { getBalances } = balancesStore;
+const { getBalances, getBalancesWithAccountId } = balancesStore;
 const { balances, currentBalance } = storeToRefs(balancesStore);
 const { categories } = storeToRefs(useCategoriesStore());
 
@@ -230,10 +239,6 @@ const refleshBalances = () => {
       title.value = ct.category_name;
     }
   } else if (accountId) {
-    param = {
-      account_id: accountId,
-      transfer_id: accountId,
-    };
     const ac = getAccount(accountId);
     if (ac) {
       title.value = ac.account_name;
@@ -245,9 +250,15 @@ const refleshBalances = () => {
       searchParams[key] = searchItems.value[key];
     }
   });
-  getBalances({ ...param, ...searchParams }).then((result) => {
-    return (balances.value = result);
-  });
+  if (accountId) {
+    getBalancesWithAccountId(accountId, searchParams).then((result) => {
+      return (balances.value = result);
+    });
+  } else {
+    getBalances({ ...param, ...searchParams }).then((result) => {
+      return (balances.value = result);
+    });
+  }
 };
 
 watch(
@@ -396,7 +407,8 @@ const showBalanceInput = (balance) => {
 const getDateW = (date) => {
   dayjs.locale(ja);
   const dt = dayjs(date);
-  return dt.format("YYYY-MM-DD(ddd) HH:mm");
+  return dt.format("MM-DD(ddd) HH:mm");
+  // return dt.format("YYYY-MM-DD(ddd) HH:mm");
 };
 
 const getYearMonth = (date) => {
