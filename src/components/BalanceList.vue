@@ -136,7 +136,7 @@
           </template>
           <template v-slot:prepend>
             <!-- <v-avatar color="grey-lighten-1"> -->
-            <v-icon color="white">{{
+            <v-icon :color="getIconColor(balance.category_id)">{{
               getCategoryIcon(balance.category_id)
             }}</v-icon>
             <!-- </v-avatar> -->
@@ -164,7 +164,10 @@
   </v-btn>
   <BalanceInput
     v-model="isShowBalanceInput"
-    @close-form="isShowBalanceInput = false"
+    @close-form="
+      isShowBalanceInput = false;
+      refleshBalances();
+    "
   ></BalanceInput>
 </template>
 
@@ -223,6 +226,28 @@ const getCategoryIcon = (categoryId) => {
   return "";
 };
 
+const getIconColor = (id) => {
+  console.log(id)
+  const ct = getCategory(id);
+  console.log(ct)
+  let color = "white";
+  if (ct) {
+    switch (ct.type) {
+      case "支出":
+        color = "#f26a6a";
+        break;
+      case "収入":
+        color = "green";
+        break;
+      case "振替":
+        color = "yellow";
+        break;
+    }
+    console.log(color);
+  }
+  return color;
+};
+
 if (accounts.value.length === 0) {
   getAccounts();
 }
@@ -252,6 +277,13 @@ const refleshBalances = () => {
   });
   if (accountId) {
     getBalancesWithAccountId(accountId, searchParams).then((result) => {
+      result.map((b) => {
+        if (b.transfer_id && +b.expence > 0) {
+          b.account_id = b.transfer_id;
+          b.transfer_id = +accountId;
+        }
+        return b;
+      });
       return (balances.value = result);
     });
   } else {
@@ -333,16 +365,17 @@ const balancesbyDate = computed(() => {
   // if (accountId && ac && ac.type === 'クレジットカード') {
   //   filteredBalances.sort((a, b) => a.withdrawal_date < b.withdrawal_date ? 1 : -1);
   // } else {
-  filteredBalances.forEach((blc) => {
-    if (!blc.transfer_id) {
-      return;
-    }
-    if (accountId == blc.account_id) {
-      blc.expence = Math.abs(blc.expence) * -1;
-      return;
-    }
-    blc.expence = Math.abs(blc.expence);
-  });
+
+  // filteredBalances.forEach((blc) => {
+  //   if (!blc.transfer_id) {
+  //     return;
+  //   }
+  //   if (accountId == blc.account_id) {
+  //     blc.expence = Math.abs(blc.expence) * -1;
+  //     return;
+  //   }
+  //   blc.expence = Math.abs(blc.expence);
+  // });
 
   filteredBalances.sort((a, b) => (a.date < b.date ? 1 : -1));
   // }
@@ -397,7 +430,7 @@ const getBalancesSumByYearMonth = (items) => {
 const isShowBalanceInput = ref(false);
 const showBalanceInput = (balance) => {
   if (balance) {
-    currentBalance.value = balance;
+    currentBalance.value = { ...balance };
   } else {
     resetCurrentBalance();
   }
@@ -416,4 +449,5 @@ const getYearMonth = (date) => {
   const dt = dayjs(date);
   return dt.format("YYYY-MM");
 };
+
 </script>

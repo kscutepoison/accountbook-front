@@ -204,7 +204,7 @@ const { accounts } = storeToRefs(accountsStore);
 const { getAccounts, getAccount } = accountsStore;
 const balanceStore = useBalancesStore();
 const { currentBalance, payee, balances } = storeToRefs(balanceStore);
-const { setPayee, createBalance, removeBalance, updateBalance } = balanceStore;
+const { setPayee, createBalance, removeBalance, updateBalance, getBalanceById } = balanceStore;
 const categoriesStore = useCategoriesStore();
 const { categories } = storeToRefs(categoriesStore);
 const { getCategories } = categoriesStore;
@@ -213,6 +213,8 @@ const dt = ref({
   date: dayjs().format("YYYY-MM-DD"),
   time: '00:00',
 });
+
+// currentBalance.value = getBalanceById(currentBalance.value.id);
 
 const balance = ref({});
 watch(
