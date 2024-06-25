@@ -118,14 +118,11 @@
         <v-list-item
           v-for="balance in items"
           :key="balance.id"
-          :title="
-            balance.title +
-            (balance.baught_at ? '(' + balance.baught_at + ')' : '')
-          "
+          :title="balance.title + (balance.baught_at ? '(' + balance.baught_at + ')' : '')"
           @click="showBalanceInput(balance)"
         >
           <template v-slot:subtitle>
-            {{ getDateW(balance.date) }}
+            {{ getDateW(balance.date) + (balance.checked ? ' ☑️' : '') }}
             <v-chip
               v-if="balance.roll_up"
               variant="text"
@@ -227,9 +224,7 @@ const getCategoryIcon = (categoryId) => {
 };
 
 const getIconColor = (id) => {
-  console.log(id)
   const ct = getCategory(id);
-  console.log(ct)
   let color = "white";
   if (ct) {
     switch (ct.type) {
@@ -243,7 +238,6 @@ const getIconColor = (id) => {
         color = "yellow";
         break;
     }
-    console.log(color);
   }
   return color;
 };
@@ -432,6 +426,7 @@ const showBalanceInput = (balance) => {
   if (balance) {
     currentBalance.value = { ...balance };
   } else {
+    console.log('reset');
     resetCurrentBalance();
   }
   isShowBalanceInput.value = true;

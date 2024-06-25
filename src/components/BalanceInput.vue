@@ -39,6 +39,7 @@
               <v-text-field
                 v-model="balance.exp"
                 label="金額"
+                type="number"
                 prefix="¥"
                 clearable
               ></v-text-field>
@@ -153,6 +154,7 @@
               <v-text-field
                 v-model="balance.exp"
                 label="金額"
+                type="number"
                 prefix="¥"
                 clearable
               ></v-text-field>
@@ -172,6 +174,12 @@
                 item-value="id"
                 clearable
               ></v-autocomplete>
+              <v-text-field
+                v-if="getAccountType(balance.account_id) == 'クレジットカード'"
+                label="引落日"
+                v-model="balance.withdrawal_date"
+                type="date"
+              ></v-text-field>
               <v-checkbox v-model="balance.checked" label="確認"></v-checkbox>
               <v-textarea v-model="balance.notes" label="メモ"></v-textarea>
             </v-form>
@@ -213,8 +221,6 @@ const dt = ref({
   date: dayjs().format("YYYY-MM-DD"),
   time: '00:00',
 });
-
-// currentBalance.value = getBalanceById(currentBalance.value.id);
 
 const balance = ref({});
 watch(
@@ -276,7 +282,10 @@ watch(
       const dy = dayjs(blc.date);
       dt.value.date = dy.format("YYYY-MM-DD");
       dt.value.time = dy.format("HH:mm");
-    }
+    } else {
+      dt.value.date = dayjs().format("YYYY-MM-DD");
+      dt.value.time = '00:00';
+    };
     blc.exp = Math.abs(+blc.expence);
     if (blc.transfer_id) {
       tab.value = "transfer";
@@ -306,7 +315,7 @@ function submitForm() {
     } else {
       balance.value.date = dt.value.date + " 00:00";
     }
-  }
+  };
   balance.value.category_id = balance.value.category_id * 1;
   switch (tab.value) {
     case "expense":
@@ -326,34 +335,20 @@ function submitForm() {
       break;
   }
   if (balance.value.id) {
-    updateBalance(balance.value);
-    currentBalance.value = balance.value;
-    balances.value.map((bl) => {
-      if (bl.id == balance.value.id) {
-        bl.title = balance.value.title;
-        bl.date = balance.value.date;
-        bl.expence = balance.value.expence;
-        bl.baught_at = balance.value.baught_at;
-        bl.checked = balance.value.checked;
-        bl.notes = balance.value.notes;
-        bl.withdrawal_date = balance.value.withdrawal_date;
-        bl.account_id = balance.value.account_id;
-        bl.category_id = balance.value.category_id;
-      }
+    updateBalance(balance.value).then(() => {
+      closeForm();
     });
   } else {
-    createBalance(balance.value);
-    // balances.value.push(balance.value);
+    createBalance(balance.value).then(() => {
+      closeForm();
+    });
   }
-  closeForm();
 }
 
 function deleteForm() {
-  removeBalance(balance.value.id);
-  balances.value = balances.value.filter((b) => {
-    return b.id != balance.value.id;
+  removeBalance(balance.value.id).then(() => {
+    closeForm();
   });
-  closeForm();
 }
 
 const getWithdrawalDate = () => {
