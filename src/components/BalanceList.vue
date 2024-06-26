@@ -212,9 +212,7 @@ const { getBalances, getBalancesWithAccountId } = balancesStore;
 const { balances, currentBalance } = storeToRefs(balancesStore);
 const { categories } = storeToRefs(useCategoriesStore());
 
-if (categories.value.length == 0) {
-  getCategories();
-}
+
 const getCategoryIcon = (categoryId) => {
   const ct = getCategory(categoryId);
   if (ct) {
@@ -241,10 +239,6 @@ const getIconColor = (id) => {
   }
   return color;
 };
-
-if (accounts.value.length === 0) {
-  getAccounts();
-}
 
 const title = ref("収支一覧");
 const refleshBalances = () => {
@@ -285,6 +279,17 @@ const refleshBalances = () => {
       return (balances.value = result);
     });
   }
+};
+
+if (accounts.value.length === 0) {
+  getAccounts().then(() => {
+    refleshBalances();
+  });
+};
+if (categories.value.length == 0) {
+  getCategories().then(() => {
+    refleshBalances();
+  });
 };
 
 watch(
@@ -333,6 +338,7 @@ const balancesbyDate = computed(() => {
     }
     if (searchItems.value.baught_at) {
       res.push(
+        balance.baught_at &&
         balance.baught_at
           .toLowerCase()
           .indexOf(searchItems.value.baught_at.toLowerCase()) >= 0
