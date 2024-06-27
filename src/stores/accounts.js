@@ -1,4 +1,4 @@
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import axios from 'axios'
 import { useApi } from './api';
@@ -7,9 +7,9 @@ import { useAuthStore } from './auth';
 export const useAccountsStore = defineStore('accounts', () => {
   const accounts = ref([]);
   const accountsWithBalanceSum = ref([]);
-  const { getAccountsAll, 
-    getAccountApi, 
-    postAccount, 
+  const { getAccountsAll,
+    getAccountApi,
+    postAccount,
     patchAccount,
     getAccountsWithBalanceSumApi
   } = useApi();
@@ -90,6 +90,47 @@ export const useAccountsStore = defineStore('accounts', () => {
     return null;
   }
 
+  const open = ref([]);
+  function resetOpen() {
+    const list = localStorage.getItem('account_open_list');
+    if (!list) {
+      open.value = [];
+      return;
+    }
+    open.value = list.split(',');
+  }
+  watch(
+    () => open.value,
+    (newValue, oldValue) => {
+      localStorage.setItem('account_open_list', newValue.join(','));
+    },
+    { deep: false }
+  );
+
+  const searchItems = ref({});
+  function clearSearchItems() {
+    const json = localStorage.getItem('account_search_items');
+    if (!json) {
+      searchItems.value = {
+        account_name: null,
+        type: null,
+        owner: null,
+        is_archived: null,
+        is_primary: null,
+      };
+      return;
+    }
+    searchItems.value = JSON.parse(json);
+  }
+
+  watch(
+    () => searchItems.value,
+    (newValue, oldValue) => {
+      localStorage.setItem('account_search_items', JSON.stringify(newValue));
+    },
+    { deep: true }
+  );
+
   return {
     accounts,
     accountsWithBalanceSum,
@@ -101,5 +142,9 @@ export const useAccountsStore = defineStore('accounts', () => {
     createAccount,
     updateAccount,
     getAccountsWithBalanceSum,
+    searchItems,
+    clearSearchItems,
+    open,
+    resetOpen,
   };
 });

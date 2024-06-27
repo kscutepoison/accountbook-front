@@ -362,23 +362,9 @@ const balancesbyDate = computed(() => {
     return !res.includes(false);
   });
   const ac = getAccount(accountId);
-  // if (accountId && ac && ac.type === 'クレジットカード') {
-  //   filteredBalances.sort((a, b) => a.withdrawal_date < b.withdrawal_date ? 1 : -1);
-  // } else {
-
-  // filteredBalances.forEach((blc) => {
-  //   if (!blc.transfer_id) {
-  //     return;
-  //   }
-  //   if (accountId == blc.account_id) {
-  //     blc.expence = Math.abs(blc.expence) * -1;
-  //     return;
-  //   }
-  //   blc.expence = Math.abs(blc.expence);
-  // });
 
   filteredBalances.sort((a, b) => (a.date < b.date ? 1 : -1));
-  // }
+
   return Object.groupBy(filteredBalances, (balance) => {
     if (accountId && ac && ac.type === "クレジットカード") {
       return getYearMonth(balance.withdrawal_date);

@@ -197,31 +197,28 @@ import router from "@/router";
 
 const isShowAccountInput = ref(false);
 
-const open = ref([]);
-
 const searchDialog = ref(false);
-const searchItems = ref({});
 function toggleSearchDialog(isOpen) {
   searchDialog.value = isOpen;
 }
 
-function clearSearchItems() {
-  searchItems.value = {
-    account_name: null,
-    type: null,
-    owner: null,
-    is_archived: null,
-    is_primary: null,
-  };
-}
-clearSearchItems();
-
 const accountsStore = useAccountsStore();
-const { createAccount, updateAccount, getAccountsWithBalanceSum } =
-  accountsStore;
-const { accountsWithBalanceSum } = storeToRefs(accountsStore);
+const {
+  createAccount,
+  updateAccount,
+  getAccountsWithBalanceSum,
+  clearSearchItems,
+  resetOpen,
+} = accountsStore;
+const {
+  accountsWithBalanceSum,
+  searchItems,
+  open,
+} = storeToRefs(accountsStore);
 
+clearSearchItems();
 getAccountsWithBalanceSum();
+resetOpen();
 
 const accountsByType = computed(() => {
   const accounts = accountsWithBalanceSum.value.filter((account) => {
@@ -271,57 +268,6 @@ const accountsByType = computed(() => {
   });
   return Object.groupBy(accounts, (account) => account.type);
 });
-
-function setOpen() {
-  open.value = Array.from(
-    new Set(Object.entries(accountsByType.value).map(([key, value]) => key))
-  );
-}
-
-watch(
-  () => searchItems.value.account_name,
-  (name, _) => {
-    if (name != null && name != "") {
-      setOpen();
-    }
-  }
-);
-watch(
-  () => searchItems.value.type,
-  (type, _) => {
-    if (type == null || type.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
-watch(
-  () => searchItems.value.owner,
-  (owner, _) => {
-    if (owner == null || owner.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
-watch(
-  () => searchItems.value.is_archived,
-  (is_archived, _) => {
-    if (is_archived == null || is_archived.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
-watch(
-  () => searchItems.value.is_primary,
-  (is_primary, _) => {
-    if (is_primary == null || is_primary.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
 
 const accountTypes = computed(() => {
   return Array.from(
