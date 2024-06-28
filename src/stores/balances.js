@@ -1,4 +1,4 @@
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import { useApi } from './api'
 import { useAuthStore } from './auth';
@@ -136,6 +136,48 @@ export const useBalancesStore = defineStore('balances', () => {
     };
   }
 
+  const open = ref([]);
+  function resetOpen() {
+    const list = localStorage.getItem('balance_open_list');
+    if (!list) {
+      open.value = [];
+      return;
+    }
+    open.value = list.split(',');
+  }
+  watch(
+    () => open.value,
+    (newValue, oldValue) => {
+      localStorage.setItem('balance_open_list', newValue.join(','));
+    },
+    { deep: false }
+  );
+
+  const searchItems = ref({});
+  function clearSearchItems() {
+    const json = localStorage.getItem('balance_search_items');
+    if (!json) {
+      searchItems.value = {
+        title: null,
+        baught_at: null,
+        checked: null,
+        notes: null,
+        start_date: dayjs().date(1).add(-6, "months").format("YYYY-MM-DD"),
+        end_date: null,
+      };
+      return;
+    }
+    searchItems.value = JSON.parse(json);
+  }
+
+  watch(
+    () => searchItems.value,
+    (newValue, oldValue) => {
+      localStorage.setItem('balance_search_items', JSON.stringify(newValue));
+    },
+    { deep: true }
+  );
+
   return {
     balances,
     currentBalance,
@@ -150,5 +192,9 @@ export const useBalancesStore = defineStore('balances', () => {
     resetCurrentBalance,
     setPayee,
     tab,
+    open,
+    resetOpen,
+    searchItems,
+    clearSearchItems,
   }
 });

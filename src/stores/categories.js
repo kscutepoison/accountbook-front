@@ -1,18 +1,19 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import { useApi } from './api';
 import { useAuthStore } from './auth';
+import dayjs from "dayjs";
 
 export const useCategoriesStore = defineStore('categories', () => {
   const categories = ref([]);
   const categoriesWithBalanceSum = ref([]);
-  const { 
-    getCategoriesAll, 
-    getCategoryApi, 
+  const {
+    getCategoriesAll,
+    getCategoryApi,
     getCategoriesWithBalanceSumApi,
-    postCategory, 
+    postCategory,
     patchCategory,
-    deleteCategory, 
+    deleteCategory,
   } = useApi();
   const { token } = storeToRefs(useAuthStore());
   async function getCategories() {
@@ -78,6 +79,63 @@ export const useCategoriesStore = defineStore('categories', () => {
     return null;
   }
 
+  const open = ref([]);
+  function resetOpen() {
+    const list = localStorage.getItem('category_open_list');
+    if (!list) {
+      open.value = [];
+      return;
+    }
+    open.value = list.split(',');
+  }
+  watch(
+    () => open.value,
+    (newValue, oldValue) => {
+      localStorage.setItem('category_open_list', newValue.join(','));
+    },
+    { deep: false }
+  );
+
+  const searchItems = ref({});
+  function clearSearchItems() {
+    const json = localStorage.getItem('category_search_items');
+    if (!json) {
+      searchItems.value = {
+        category_name: null,
+        type: null,
+        date_start: dayjs().date(1).format("YYYY-MM-DD"),
+        date_end: dayjs()
+          .date(1)
+          .add(1, "months")
+          .add(-1, "days")
+          .format("YYYY-MM-DD"),
+      };
+      return;
+    }
+    searchItems.value = JSON.parse(json);
+  }
+
+  watch(
+    () => searchItems.value,
+    (newValue, oldValue) => {
+      localStorage.setItem('category_search_items', JSON.stringify(newValue));
+    },
+    { deep: true }
+  );
+
+  watch(
+    () => searchItems.value.date_start,
+    (dt, _) => {
+      if (dt) {
+        searchItems.value.date_end = dayjs(searchItems.value.date_start)
+          .date(1)
+          .add(1, "months")
+          .add(-1, "days")
+          .format("YYYY-MM-DD");
+      }
+    }
+  );
+
   return {
     categories,
     categoriesWithBalanceSum,
@@ -90,5 +148,9 @@ export const useCategoriesStore = defineStore('categories', () => {
     updateCategory,
     removeCategory,
     getCategoriesWithBalanceSum,
+    open,
+    resetOpen,
+    searchItems,
+    clearSearchItems,
   };
 });

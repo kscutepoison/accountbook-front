@@ -179,28 +179,13 @@ import dayjs from "dayjs";
 import ja from "dayjs/locale/ja";
 
 const searchDialog = ref(false);
-const searchItems = ref({});
 function toggleSearchDialog(isOpen) {
   searchDialog.value = isOpen;
 }
 
-function clearSearchItems() {
-  searchItems.value = {
-    title: null,
-    baught_at: null,
-    checked: null,
-    start_date: dayjs().date(1).add(-6, "months").format("YYYY-MM-DD"),
-    end_date: null,
-  };
-}
-clearSearchItems();
-
 const route = useRoute();
 let categoryId = route.query.categoryId;
 let accountId = route.query.accountId;
-const open = ref([]);
-open.value.push(dayjs().format("YYYY-MM"));
-open.value.push(dayjs().add(-1, "month").format("YYYY-MM"));
 
 const accountsStore = useAccountsStore();
 const { getAccountById, getAccount, getAccounts } = accountsStore;
@@ -208,10 +193,18 @@ const { accounts } = storeToRefs(accountsStore);
 const { getCategoryById, getCategories, getCategory } = useCategoriesStore();
 // const balances = ref([]);
 const balancesStore = useBalancesStore();
-const { getBalances, getBalancesWithAccountId } = balancesStore;
-const { balances, currentBalance } = storeToRefs(balancesStore);
+const {
+  getBalances,
+  getBalancesWithAccountId,
+  resetOpen,
+  clearSearchItems,
+} = balancesStore;
+const { balances, currentBalance, searchItems, open, } = storeToRefs(balancesStore);
 const { categories } = storeToRefs(useCategoriesStore());
 
+
+clearSearchItems();
+resetOpen();
 
 const getCategoryIcon = (categoryId) => {
   const ct = getCategory(categoryId);
@@ -301,7 +294,6 @@ watch(
   }
 );
 
-let categoryOrAccount;
 refleshBalances();
 watch(
   () => route.query.categoryId,
@@ -374,38 +366,38 @@ const balancesbyDate = computed(() => {
   });
 });
 
-function setOpen() {
-  open.value = Array.from(
-    new Set(Object.entries(balancesbyDate.value).map(([key, value]) => key))
-  );
-}
+// function setOpen() {
+//   open.value = Array.from(
+//     new Set(Object.entries(balancesbyDate.value).map(([key, value]) => key))
+//   );
+// }
 
-watch(
-  () => searchItems.value.title,
-  (title, _) => {
-    if (title != null && title != "") {
-      setOpen();
-    }
-  }
-);
-watch(
-  () => searchItems.value.baught_at,
-  (baught_at, _) => {
-    if (baught_at == null || baught_at.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
-watch(
-  () => searchItems.value.checked,
-  (checked, _) => {
-    if (checked == null || checked.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
+// watch(
+//   () => searchItems.value.title,
+//   (title, _) => {
+//     if (title != null && title != "") {
+//       setOpen();
+//     }
+//   }
+// );
+// watch(
+//   () => searchItems.value.baught_at,
+//   (baught_at, _) => {
+//     if (baught_at == null || baught_at.length === 0) {
+//       return;
+//     }
+//     setOpen();
+//   }
+// );
+// watch(
+//   () => searchItems.value.checked,
+//   (checked, _) => {
+//     if (checked == null || checked.length === 0) {
+//       return;
+//     }
+//     setOpen();
+//   }
+// );
 
 const getBalancesSumByYearMonth = (items) => {
   return items.reduce((result, item) => {
@@ -418,7 +410,6 @@ const showBalanceInput = (balance) => {
   if (balance) {
     currentBalance.value = { ...balance };
   } else {
-    console.log('reset');
     resetCurrentBalance();
   }
   isShowBalanceInput.value = true;

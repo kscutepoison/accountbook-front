@@ -154,49 +154,25 @@ import dayjs from "dayjs";
 import { useCategoriesStore } from "@/stores/categories";
 
 const searchDialog = ref(false);
-const searchItems = ref({});
 function toggleSearchDialog(isOpen) {
   searchDialog.value = isOpen;
 }
 
-function clearSearchItems() {
-  searchItems.value = {
-    category_name: null,
-    type: null,
-    date_start: dayjs().date(1).format("YYYY-MM-DD"),
-    date_end: dayjs()
-      .date(1)
-      .add(1, "months")
-      .add(-1, "days")
-      .format("YYYY-MM-DD"),
-  };
-}
-clearSearchItems();
-
-watch(
-  () => searchItems.value.date_start,
-  (dt, _) => {
-    if (dt) {
-      searchItems.value.date_end = dayjs(searchItems.value.date_start)
-        .date(1)
-        .add(1, "months")
-        .add(-1, "days")
-        .format("YYYY-MM-DD");
-    }
-  }
-);
-
 const isShowCategoryInput = ref(false);
-const open = ref(["支出"]);
 
 const categoriesStore = useCategoriesStore();
-const { categoriesWithBalanceSum } = storeToRefs(categoriesStore);
+const { categoriesWithBalanceSum, open, searchItems } = storeToRefs(categoriesStore);
 const {
   getCategories,
   createCategory,
   updateCategory,
   getCategoriesWithBalanceSum,
+  resetOpen,
+  clearSearchItems,
 } = categoriesStore;
+
+clearSearchItems();
+resetOpen();
 
 getCategoriesWithBalanceSum(
   (({ date_start, date_end }) => ({ date_start, date_end }))(searchItems.value)
@@ -235,30 +211,6 @@ const categoriesByType = computed(() => {
   });
   return Object.groupBy(categories, (category) => category.type);
 });
-
-function setOpen() {
-  open.value = Array.from(
-    new Set(Object.entries(categoriesByType.value).map(([key, value]) => key))
-  );
-}
-
-watch(
-  () => searchItems.value.category_name,
-  (name, _) => {
-    if (name != null && name != "") {
-      setOpen();
-    }
-  }
-);
-watch(
-  () => searchItems.value.type,
-  (type, _) => {
-    if (type == null || type.length === 0) {
-      return;
-    }
-    setOpen();
-  }
-);
 
 const categoryTypes = computed(() => {
   return Array.from(
