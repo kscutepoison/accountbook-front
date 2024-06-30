@@ -109,15 +109,18 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   const searchItems = ref({});
   function clearSearchItems() {
+    searchItems.value = {
+      account_name: null,
+      type: null,
+      owner: null,
+      is_archived: null,
+      is_primary: null,
+    };
+  }
+  function initSearchItems() {
     const json = localStorage.getItem('account_search_items');
     if (!json) {
-      searchItems.value = {
-        account_name: null,
-        type: null,
-        owner: null,
-        is_archived: null,
-        is_primary: null,
-      };
+      clearSearchItems();
       return;
     }
     searchItems.value = JSON.parse(json);
@@ -144,6 +147,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     getAccountsWithBalanceSum,
     searchItems,
     clearSearchItems,
+    initSearchItems,
     open,
     resetOpen,
   };

@@ -198,12 +198,13 @@ const {
   getBalancesWithAccountId,
   resetOpen,
   clearSearchItems,
+  initSearchItems,
 } = balancesStore;
 const { balances, currentBalance, searchItems, open, } = storeToRefs(balancesStore);
 const { categories } = storeToRefs(useCategoriesStore());
 
 
-clearSearchItems();
+initSearchItems();
 resetOpen();
 
 const getCategoryIcon = (categoryId) => {

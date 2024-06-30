@@ -98,18 +98,21 @@ export const useCategoriesStore = defineStore('categories', () => {
 
   const searchItems = ref({});
   function clearSearchItems() {
+    searchItems.value = {
+      category_name: null,
+      type: null,
+      date_start: dayjs().date(1).format("YYYY-MM-DD"),
+      date_end: dayjs()
+        .date(1)
+        .add(1, "months")
+        .add(-1, "days")
+        .format("YYYY-MM-DD"),
+    };
+  }
+  function initSearchItems() {
     const json = localStorage.getItem('category_search_items');
     if (!json) {
-      searchItems.value = {
-        category_name: null,
-        type: null,
-        date_start: dayjs().date(1).format("YYYY-MM-DD"),
-        date_end: dayjs()
-          .date(1)
-          .add(1, "months")
-          .add(-1, "days")
-          .format("YYYY-MM-DD"),
-      };
+      clearSearchItems();
       return;
     }
     searchItems.value = JSON.parse(json);
@@ -152,5 +155,6 @@ export const useCategoriesStore = defineStore('categories', () => {
     resetOpen,
     searchItems,
     clearSearchItems,
+    initSearchItems,
   };
 });

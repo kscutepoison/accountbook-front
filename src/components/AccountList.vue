@@ -207,6 +207,7 @@ const {
   createAccount,
   updateAccount,
   getAccountsWithBalanceSum,
+  initSearchItems,
   clearSearchItems,
   resetOpen,
 } = accountsStore;
@@ -216,7 +217,7 @@ const {
   open,
 } = storeToRefs(accountsStore);
 
-clearSearchItems();
+initSearchItems();
 getAccountsWithBalanceSum();
 resetOpen();
 

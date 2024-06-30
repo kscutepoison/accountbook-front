@@ -173,9 +173,10 @@ const {
   getCategoriesWithBalanceSum,
   resetOpen,
   clearSearchItems,
+  initSearchItems,
 } = categoriesStore;
 
-clearSearchItems();
+initSearchItems();
 resetOpen();
 
 getCategoriesWithBalanceSum(

@@ -155,16 +155,19 @@ export const useBalancesStore = defineStore('balances', () => {
 
   const searchItems = ref({});
   function clearSearchItems() {
+    searchItems.value = {
+      title: null,
+      baught_at: null,
+      checked: null,
+      notes: null,
+      start_date: dayjs().date(1).add(-6, "months").format("YYYY-MM-DD"),
+      end_date: null,
+    };
+  }
+  function initSearchItems() {
     const json = localStorage.getItem('balance_search_items');
     if (!json) {
-      searchItems.value = {
-        title: null,
-        baught_at: null,
-        checked: null,
-        notes: null,
-        start_date: dayjs().date(1).add(-6, "months").format("YYYY-MM-DD"),
-        end_date: null,
-      };
+      clearSearchItems();
       return;
     }
     searchItems.value = JSON.parse(json);
@@ -196,5 +199,6 @@ export const useBalancesStore = defineStore('balances', () => {
     resetOpen,
     searchItems,
     clearSearchItems,
+    initSearchItems,
   }
 });
