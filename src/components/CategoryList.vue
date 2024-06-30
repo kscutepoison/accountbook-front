@@ -16,6 +16,7 @@
         hide-details
         single-line
         append-inner-icon="mdi-dots-vertical"
+        clearable
         @click:append-inner="toggleSearchDialog(true)"
       ></v-text-field>
       <!-- </template> -->
@@ -33,6 +34,7 @@
                 <v-text-field
                   v-model="searchItems.category_name"
                   label="カテゴリ名"
+                  clearable
                 ></v-text-field>
               </v-col>
               <v-col cols="18" md="4" sm="6">
@@ -42,6 +44,7 @@
                   v-model="searchItems.type"
                   chips
                   multiple
+                  clearable
                 ></v-select>
               </v-col>
             </v-row>
@@ -161,7 +164,8 @@ function toggleSearchDialog(isOpen) {
 const isShowCategoryInput = ref(false);
 
 const categoriesStore = useCategoriesStore();
-const { categoriesWithBalanceSum, open, searchItems } = storeToRefs(categoriesStore);
+const { categoriesWithBalanceSum, open, searchItems } =
+  storeToRefs(categoriesStore);
 const {
   getCategories,
   createCategory,
